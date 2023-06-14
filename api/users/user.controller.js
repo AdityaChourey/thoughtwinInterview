@@ -2,7 +2,7 @@ const { genSaltSync, hashSync } = require('bcrypt')
 const { create } = require('./user.service')
 
 module.exports = {
-  createUser: (req, res) => {
+  createUsers: (req, res) => {
     const body = req.body
     const salt = genSaltSync(10)
     body.password = hashSync(body.password, salt)
