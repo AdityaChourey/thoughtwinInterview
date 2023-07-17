@@ -6,15 +6,15 @@ module.exports = {
       `SELECT * FROM users WHERE firstName = ? or email = ? `,
       [data.firstname, data.email],
       (error, results, fields) => {
-        if (results.length > 0) {
-          return callback(null, {
+        if (results?.length > 0) {
+          return res.json({
             success: 0,
             message: 'Name or email already exists!',
           })
         } else {
           pool.query(
-            `insert into users(id,firstname,lastname,email,number,password,created_at,updated_at)
-                  values(?,?,?,?,?,?,?,?)`,
+            `insert into users(id,firstname,lastname,email,number,password,created_at,updated_at,user_token)
+                  values(?,?,?,?,?,?,?,?,?)`,
             [
               data.id,
               data.firstname,
@@ -24,6 +24,7 @@ module.exports = {
               data.password,
               data.created_at,
               data.updated_at,
+              data.user_token,
             ],
             (error, results, fields) => {
               if (error) {

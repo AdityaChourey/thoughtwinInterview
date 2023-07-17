@@ -1,4 +1,5 @@
 const { genSaltSync, hashSync, compareSync } = require('bcrypt')
+const pool = require('../../database/database')
 const moment = require('moment')
 const {
   create,
@@ -14,11 +15,15 @@ const { verify } = require('jsonwebtoken')
 
 module.exports = {
   createUsers: (req, res) => {
+    const jsonToken = sign({ id: req.body.id }, process.env.PASS_KEY, {
+      expiresIn: '24h',
+    })
     const currentTime = moment().format()
     const body = {
       ...req.body,
       created_at: currentTime,
       updated_at: null,
+      user_token: jsonToken,
     }
     const salt = genSaltSync(10)
     body.password = hashSync(body.password, salt)
@@ -56,7 +61,6 @@ module.exports = {
       })
     } else {
       create(body, (err, results) => {
-        console.log(body)
         if (err) {
           return res.status(500).json({
             success: 0,
@@ -66,6 +70,7 @@ module.exports = {
           return res.status(200).json({
             success: 1,
             data: results,
+            token: jsonToken,
           })
         }
       })
@@ -81,7 +86,7 @@ module.exports = {
         })
       }
       if (!results) {
-        return res.json({
+        return res.status(400).json({
           success: 0,
           message: 'Record not found!',
         })
@@ -122,7 +127,6 @@ module.exports = {
       })
     } else {
       updateUser(body, (err, results) => {
-        console.log(body)
         if (err) {
           return res.status(500).json({
             success: 0,
@@ -147,7 +151,7 @@ module.exports = {
         })
       }
       if (!results) {
-        return res.json({
+        return res.status(400).json({
           success: 0,
           message: 'Record not found!',
         })
@@ -162,22 +166,41 @@ module.exports = {
     const body = req.body
     let token = req.get('authorization')
     if (token) {
-      token = token.slice(7)
-      verify(token, process.env.PASS_KEY, (err, decode) => {
-        if (err) {
-          return res.json({
-            success: 0,
-            message: 'Invalid token',
-          })
-        } else {
-          return res.status(200).json({
-            success: 1,
-            message: 'Logged in SuccessFully',
-            userInfo: decode.result,
-            token: req.get('authorization'),
-          })
+      pool.query(
+        `SELECT * FROM users WHERE user_token = ?`,
+        [token?.slice(7)],
+        (error, results, fields) => {
+          if (!results?.length) {
+            return res.status(400).json({
+              success: 0,
+              message: 'User not found!',
+            })
+          }
+          if (results?.length > 0) {
+            if (results[0].user_token) {
+              verify(results[0].user_token, process.env.PASS_KEY, (err) => {
+                if (err) {
+                  return res.status(400).json({
+                    success: 0,
+                    message: 'Invalid token',
+                  })
+                } else {
+                  return res.status(200).json({
+                    success: 1,
+                    message: 'Logged in SuccessFully',
+                    userInfo: {
+                      ...results[0],
+                      password: undefined,
+                      user_token: undefined,
+                    },
+                    token: results[0].user_token,
+                  })
+                }
+              })
+            }
+          }
         }
-      })
+      )
     } else {
       getUserByFirstName(body.firstname, (err, results) => {
         if (err) {
@@ -187,7 +210,7 @@ module.exports = {
           })
         }
         if (!results) {
-          return res.json({
+          return res.status(400).json({
             success: 0,
             message: 'Invalid credentials!',
           })
@@ -198,14 +221,29 @@ module.exports = {
           const jsonToken = sign({ result: results }, process.env.PASS_KEY, {
             expiresIn: '24h',
           })
+          pool.query(
+            `update users set user_token = ? where id = ?`,
+            [jsonToken, results.id],
+            (error, results, fields) => {
+              if (error) {
+                console.log('error', error)
+              } else {
+                console.log('results', results)
+              }
+            }
+          )
           return res.status(200).json({
             success: 1,
             message: 'Logged in SuccessFully',
-            userInfo: results,
+            userInfo: {
+              ...results,
+              password: undefined,
+              user_token: undefined,
+            },
             token: jsonToken,
           })
         } else {
-          return res.status(401).json({
+          return res.status(400).json({
             success: 0,
             message: 'Invalid password!',
           })
