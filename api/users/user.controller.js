@@ -24,6 +24,7 @@ module.exports = {
       created_at: currentTime,
       updated_at: null,
       user_token: jsonToken,
+      role: role ? role : 'user',
     }
     const salt = genSaltSync(10)
     body.password = hashSync(body.password, salt)

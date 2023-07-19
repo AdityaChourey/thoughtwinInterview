@@ -13,7 +13,7 @@ module.exports = {
           })
         } else {
           pool.query(
-            `insert into users(id,firstname,lastname,email,number,password,created_at,updated_at,user_token)
+            `insert into users(id,firstname,lastname,email,number,password,created_at,updated_at,user_token,role)
                   values(?,?,?,?,?,?,?,?,?)`,
             [
               data.id,
@@ -25,6 +25,7 @@ module.exports = {
               data.created_at,
               data.updated_at,
               data.user_token,
+              data.role,
             ],
             (error, results, fields) => {
               if (error) {
