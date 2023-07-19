@@ -14,7 +14,7 @@ module.exports = {
         } else {
           pool.query(
             `insert into users(id,firstname,lastname,email,number,password,created_at,updated_at,user_token,role)
-                  values(?,?,?,?,?,?,?,?,?)`,
+                  values(?,?,?,?,?,?,?,?,?,?)`,
             [
               data.id,
               data.firstname,
