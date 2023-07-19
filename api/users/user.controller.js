@@ -22,7 +22,7 @@ module.exports = {
     const body = {
       ...req.body,
       created_at: currentTime,
-      updated_at: null,
+      updated_at: currentTime,
       user_token: jsonToken,
       role: req.body.role ? req.body.role : 'user',
     }
@@ -65,7 +65,7 @@ module.exports = {
         if (err) {
           return res.status(500).json({
             success: 0,
-            message: 'Database connection!',
+            message: 'Database connection error!',
           })
         } else {
           return res.status(200).json({
