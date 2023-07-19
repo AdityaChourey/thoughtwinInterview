@@ -26,7 +26,6 @@ module.exports = {
       user_token: jsonToken,
       role: req.body.role ? req.body.role : 'user',
     }
-    console.log('>>>body', body)
     const salt = genSaltSync(10)
     body.password = hashSync(body.password, salt)
     if (
@@ -66,7 +65,7 @@ module.exports = {
         if (err) {
           return res.status(500).json({
             success: 0,
-            message: 'Database connection error!',
+            message: 'Database connection!',
           })
         } else {
           return res.status(200).json({
