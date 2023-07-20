@@ -61,7 +61,8 @@ module.exports = {
       !body.wrong_option_1 ||
       !body.wrong_option_2 ||
       !body.wrong_option_3 ||
-      !body.experience
+      !body.experience ||
+      !body.difficulty
     ) {
       return res.status(400).json({
         success: 0,
