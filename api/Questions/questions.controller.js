@@ -53,6 +53,7 @@ module.exports = {
   //   }
   // },
   uploadQuestions: (req, res) => {
+    const body = req.body
     if (
       !body.id ||
       !body.question ||
