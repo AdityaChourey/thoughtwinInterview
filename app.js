@@ -6,7 +6,7 @@ const questionRouter = require('./api/Questions/questions.router')
 
 app.use(express.json())
 app.use('/api/users', userRouter)
-app.use('/api/users', userRouter)
+app.use('/api/questions', questionRouter)
 
 app.listen(process.env.APP_PORT, () => {
   console.log('server started')
